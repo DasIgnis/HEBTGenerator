@@ -1,18 +1,22 @@
-﻿using System.Collections;
+﻿using HEBT.Nodes;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HintedExecution : MonoBehaviour
+namespace HEBT
 {
-    // Start is called before the first frame update
-    void Start()
+    public class HintedExecutionBehaviourTree
     {
-        
-    }
+        private BaseNode _root;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public HintedExecutionBehaviourTree(BaseNode root)
+        {
+            _root = root;
+        }
+
+        public void Execute()
+        {
+            _root.Execute();
+        }
     }
 }
