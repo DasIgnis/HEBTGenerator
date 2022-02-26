@@ -4,12 +4,17 @@ using UnityEngine;
 
 namespace HEBT.Nodes
 {
-    public class NewBehaviourScript : BaseNode
+    public class SelectorNode : BaseNode
     {
         private List<BaseNode> _children;
-        public NewBehaviourScript()
+        public SelectorNode()
         {
             _children = new List<BaseNode>();
+        }
+
+        public SelectorNode(List<BaseNode> children)
+        {
+            _children = children;
         }
 
         public BaseNodeExecutionStatus Execute()

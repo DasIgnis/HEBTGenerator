@@ -1,5 +1,6 @@
 ﻿using HEBT;
 using HEBT.Nodes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,8 @@ public class ColletorBehaviorScript : MonoBehaviour
 
     private HintedExecutionBehaviourTree _behaviourTree;
     private ActionNodeParams _params;
+
+    private Vector3? _wanderPoint;
 
     private class ActionNodeParams
     {
@@ -27,17 +30,15 @@ public class ColletorBehaviorScript : MonoBehaviour
             CurrentPosition = transform.position
         };
 
-
-        ActionNode<ActionNodeParams> root = new ActionNode<ActionNodeParams>(
-            _params,
-            (ActionNodeParams actionNodeParams) =>
+        SelectorNode root = new SelectorNode(new List<BaseNode>
+        {
+            new SequenceNode(new List<BaseNode>
             {
-                actionNodeParams.CurrentPosition = Vector3.MoveTowards(
-                    actionNodeParams.CurrentPosition, 
-                    actionNodeParams.FlagPosition,
-                    0.01f);
-            }
-        );
+                new ConditionNode<ActionNodeParams>(_params, FlagIsFar),
+                new ActionNode<ActionNodeParams>(_params, MoveTowardsFlag)
+            }),
+            new ActionNode<ActionNodeParams>(_params, Wander)
+        });
 
         _behaviourTree = new HintedExecutionBehaviourTree(root);
     }
@@ -47,5 +48,46 @@ public class ColletorBehaviorScript : MonoBehaviour
     {
         _behaviourTree.Execute();
         transform.position = _params.CurrentPosition;
+        UpdateWordParams();
+    }
+
+    void UpdateWordParams()
+    {
+        _params.FlagPosition = flag.transform.position;
+    }
+
+    void MoveTowardsFlag(ActionNodeParams nodeParams)
+    {
+        if (_wanderPoint.HasValue)
+        {
+            _wanderPoint = null;
+        }
+
+        nodeParams.CurrentPosition = Vector3.MoveTowards(
+                    nodeParams.CurrentPosition,
+                    nodeParams.FlagPosition,
+                    0.01f);
+    }
+
+    void Wander(ActionNodeParams nodeParams)
+    {
+        if (_wanderPoint.HasValue)
+        {
+            nodeParams.CurrentPosition = Vector3.MoveTowards(
+                nodeParams.CurrentPosition,
+                _wanderPoint.Value,
+                0.01f);
+        } else
+        {
+            System.Random random = new System.Random();
+            double theta = random.NextDouble() * 2 * Mathf.PI;
+            double radius = random.Next() * 6;
+            _wanderPoint = new Vector3(Convert.ToSingle(radius * Math.Cos(theta)), Convert.ToSingle(radius * Math.Sin(theta)));
+        }
+    }
+
+    bool FlagIsFar(ActionNodeParams nodeParams)
+    {
+        return Vector3.Distance(nodeParams.CurrentPosition, nodeParams.FlagPosition) > 3f;
     }
 }

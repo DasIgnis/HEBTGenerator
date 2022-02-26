@@ -13,10 +13,17 @@ namespace HEBT.Nodes
             _children = new List<BaseNode>();
         }
 
+        public SequenceNode(List<BaseNode> children)
+        {
+            _children = children;
+        }
+
         public BaseNodeExecutionStatus Execute()
         {
             foreach (BaseNode child in _children)
             {
+                //TODO: ТУТ ДОЛЖЕН БЫТЬ ОТКАТ В СЛУЧАЕ FAILURE!
+
                 var childStatus = child.Execute();
                 if (childStatus == BaseNodeExecutionStatus.RUNNING)
                 {
