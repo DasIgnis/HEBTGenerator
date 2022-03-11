@@ -1,45 +1,55 @@
-﻿using System.Collections;
+﻿using Assets.HEBT.Nodes.Models;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace HEBT.Nodes
 {
-    public class SequenceNode : BaseNode
+    public class SequenceNode<T> : BaseNode<T>
     {
-        private List<BaseNode> _children;
-
         public SequenceNode()
         {
-            _children = new List<BaseNode>();
+            _children = new List<BaseNode<T>>();
         }
 
-        public SequenceNode(List<BaseNode> children)
+        public SequenceNode(List<BaseNode<T>> children)
         {
             _children = children;
         }
 
-        public BaseNodeExecutionStatus Execute()
+        public new ExecutionResponse Execute(T args)
         {
-            foreach (BaseNode child in _children)
+            foreach (BaseNode<T> child in _children)
             {
-                //TODO: ТУТ ДОЛЖЕН БЫТЬ ОТКАТ В СЛУЧАЕ FAILURE!
-
-                var childStatus = child.Execute();
-                if (childStatus == BaseNodeExecutionStatus.RUNNING)
+                var childStatus = child.Execute(args);
+                if (childStatus.Status == BaseNodeExecutionStatus.RUNNING)
                 {
-                    return BaseNodeExecutionStatus.RUNNING;
+                    return childStatus;
                 } 
-                else if (childStatus == BaseNodeExecutionStatus.FAILURE)
+                else if (childStatus.Status == BaseNodeExecutionStatus.FAILURE)
                 {
-                    return BaseNodeExecutionStatus.FAILURE;
+                    return new ExecutionResponse
+                    {
+                        ExecutingActionNodeId = "",
+                        Status = BaseNodeExecutionStatus.FAILURE
+                    };
                 }
             }
-            return BaseNodeExecutionStatus.SUCCESS;
+            return new ExecutionResponse
+            {
+                ExecutingActionNodeId = "",
+                Status = BaseNodeExecutionStatus.SUCCESS
+            };
         }
 
-        public List<BaseNode> GetChildren()
+        public new List<BaseNode<T>> GetChildren()
         {
             return _children;
+        }
+
+        public new string GetId()
+        {
+            return "";
         }
     }
 }

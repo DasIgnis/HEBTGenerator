@@ -1,22 +1,53 @@
-﻿using HEBT.Nodes;
-using System.Collections;
+﻿using Assets.HEBT.Hints;
+using HEBT.Nodes;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace HEBT
 {
-    public class HintedExecutionBehaviourTree
+    [Serializable]
+    public class HintedExecutionBehaviourTree<T>
     {
-        private BaseNode _root;
+        [SerializeField]
+        private BaseNode<T> tree;
 
-        public HintedExecutionBehaviourTree(BaseNode root)
+        [SerializeReference]
+        T args;
+
+        public List<string> initialOrder = new List<string>();
+        public List<BaseHint> appliedHints = new List<BaseHint>();
+
+        public HintedExecutionBehaviourTree()
         {
-            _root = root;
+
         }
 
         public void Execute()
         {
-            _root.Execute();
+            try
+            {
+                tree.Execute(args);
+            } catch (Exception e)
+            {
+                Debug.LogError($"Error while performing behaviour: {e.Message}; Stacktrace: {e.StackTrace}");
+            }
+        }
+
+        public void ApplyHint(BaseHint hint)
+        {
+            appliedHints.Add(hint);
+            tree.Reorder(hint.GetOrderIds());
+        }
+
+        public void RemoveHint(BaseHint hint)
+        {
+            appliedHints.Remove(hint);
+            tree.Reorder(initialOrder);
+            foreach (BaseHint h in appliedHints)
+            {
+                tree.Reorder(h.GetOrderIds());
+            }
         }
     }
 }
