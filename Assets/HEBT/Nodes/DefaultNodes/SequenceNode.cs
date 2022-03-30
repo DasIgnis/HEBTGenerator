@@ -1,25 +1,40 @@
-﻿using Assets.HEBT.Nodes.Models;
+﻿using Assets.Behaviours;
+using Assets.HEBT.Nodes.Models;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace HEBT.Nodes
 {
-    public class SequenceNode<T> : BaseNode<T>
+    public class SequenceNode : BaseNode
     {
+        [SerializeField, SerializeReference]
+        List<BaseNode> _children;
+
         public SequenceNode()
         {
-            _children = new List<BaseNode<T>>();
+            _children = new List<BaseNode>();
         }
 
-        public SequenceNode(List<BaseNode<T>> children)
+        public SequenceNode(List<BaseNode> children)
         {
+
             _children = children;
         }
 
-        public new ExecutionResponse Execute(T args)
+        public void AddChild(BaseNode node)
         {
-            foreach (BaseNode<T> child in _children)
+            _children.Add(node);
+        }
+
+        public void RemoveChildAt(int index)
+        {
+            _children.RemoveAt(index);
+        }
+
+        public new ExecutionResponse Execute(IEnvironment args)
+        {
+            foreach (BaseNode child in _children)
             {
                 var childStatus = child.Execute(args);
                 if (childStatus.Status == BaseNodeExecutionStatus.RUNNING)
@@ -42,7 +57,7 @@ namespace HEBT.Nodes
             };
         }
 
-        public new List<BaseNode<T>> GetChildren()
+        public new List<BaseNode> GetChildren()
         {
             return _children;
         }
@@ -50,6 +65,12 @@ namespace HEBT.Nodes
         public new string GetId()
         {
             return "";
+        }
+
+        public void Reorder(List<string> ids)
+        {
+            _children.Sort((x, y) => ids.IndexOf(x.GetId()) - ids.IndexOf(y.GetId()));
+            _children.ForEach(x => x.Reorder(ids));
         }
     }
 }

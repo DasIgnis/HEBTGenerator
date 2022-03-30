@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Assets.Behaviours
 {
-    class Environment
+    public interface IEnvironment
     {
+        object GetEnvironmentVariables();
     }
 }

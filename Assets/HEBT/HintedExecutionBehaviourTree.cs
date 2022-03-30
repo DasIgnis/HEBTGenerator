@@ -1,4 +1,6 @@
-﻿using Assets.HEBT.Hints;
+﻿using Assets.Behaviours;
+using Assets.HEBT.Hints;
+using Assets.HEBT.UI;
 using HEBT.Nodes;
 using System;
 using System.Collections.Generic;
@@ -7,16 +9,16 @@ using UnityEngine;
 namespace HEBT
 {
     [Serializable]
-    public class HintedExecutionBehaviourTree<T>
+    public class HintedExecutionBehaviourTree: MonoBehaviour
     {
-        [SerializeField]
-        private BaseNode<T> tree;
+        [SerializeField, SerializeReference]
+        public BaseNode tree;
 
         [SerializeReference]
-        T args;
+        public IEnvironment args;
 
-        public List<string> initialOrder = new List<string>();
-        public List<BaseHint> appliedHints = new List<BaseHint>();
+        private List<string> initialOrder = new List<string>();
+        private List<BaseHint> appliedHints = new List<BaseHint>();
 
         public HintedExecutionBehaviourTree()
         {

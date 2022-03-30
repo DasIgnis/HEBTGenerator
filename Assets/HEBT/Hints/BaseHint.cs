@@ -6,9 +6,19 @@ using System.Threading.Tasks;
 
 namespace Assets.HEBT.Hints
 {
-    public interface BaseHint
+    [Serializable]
+    public class BaseHint
     {
-        string GetName();
-        List<string> GetOrderIds();
+        public string Name;
+
+        public List<string> OrderIds;
+
+        public string GetName() {
+            return Name;
+        }
+        public List<string> GetOrderIds()
+        {
+            return OrderIds;
+        }
     }
 }
