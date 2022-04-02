@@ -1,5 +1,6 @@
 ﻿using Assets.Behaviours;
 using Assets.HEBT.Nodes.Models;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,14 +12,18 @@ namespace HEBT.Nodes
         [SerializeField, SerializeReference]
         List<BaseNode> _children;
 
+        [SerializeField]
+        public string _id;
+
         public SelectorNode()
         {
             _children = new List<BaseNode>();
         }
 
-        public SelectorNode(List<BaseNode> children)
+        public SelectorNode(List<BaseNode> children, string id)
         {
             _children = children;
+            _id = id;
         }
 
         public void AddChild(BaseNode node)
@@ -31,7 +36,7 @@ namespace HEBT.Nodes
             _children.RemoveAt(index);
         }
 
-        public new ExecutionResponse Execute(IEnvironment args)
+        public ExecutionResponse Execute(IEnvironment args)
         {
             foreach (BaseNode child in _children)
             {
@@ -56,14 +61,19 @@ namespace HEBT.Nodes
             };
         }
 
-        public new List<BaseNode> GetChildren()
+        public List<BaseNode> GetChildren()
         {
             return _children;
         }
 
-        public new string GetId()
+        public string GetId()
         {
-            return "";
+            return _id;
+        }
+
+        public void SetId(string id)
+        {
+            _id = id;
         }
 
         public void Reorder(List<string> ids)

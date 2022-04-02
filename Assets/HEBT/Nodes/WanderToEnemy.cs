@@ -12,31 +12,38 @@ namespace Assets.HEBT.Nodes
 {
     public class WanderToEnemy : BaseNode
     {
+        [SerializeField]
+        public string _id;
+
+        public WanderToEnemy()
+        {
+        }
+
         public void AddChild(BaseNode node) { }
 
         public ExecutionResponse Execute(IEnvironment args)
         {
-            throw new NotImplementedException();
+            Debug.Log("IsNear");
+            return new ExecutionResponse { Status = BaseNodeExecutionStatus.SUCCESS };
         }
 
         public List<BaseNode> GetChildren()
         {
-            throw new NotImplementedException();
+            return new List<BaseNode> { };
         }
 
         public string GetId()
         {
-            throw new NotImplementedException();
+            return _id;
         }
 
-        public void RemoveChildAt(int index)
+        public void SetId(string id)
         {
-            throw new NotImplementedException();
-        }
+            _id = id;
+        } 
 
-        public void Reorder(List<string> ids)
-        {
-            throw new NotImplementedException();
-        }
+        public void RemoveChildAt(int index) { }
+
+        public void Reorder(List<string> ids) { }
     }
 }

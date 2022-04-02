@@ -37,6 +37,11 @@ namespace HEBT.Nodes
             return "";
         }
 
+        public void SetId(string id)
+        {
+
+        }
+
         public void RemoveChildAt(int index)
         {
             throw new NotImplementedException();

@@ -11,11 +11,13 @@ public class StoreInterfaceReference : MonoBehaviour
     [CustomEditor(typeof(HintedExecutionBehaviourTree))]
     public class HEBTInspector : Editor
     {
-        enum displayFieldType { DisplayAsAutomaticFields, DisplayAsCustomizableGUIFields }
-        displayFieldType DisplayFieldType;
-
         HintedExecutionBehaviourTree t;
         SerializedObject GetTarget;
+
+        private static List<string> nodes = new List<string> { "ActionNode", "SequenceNode", "SelectorNode" };
+        private static string[] nodesArr = nodes.ToArray();
+
+        private static Dictionary<string, int> selectorIndexes = new Dictionary<string, int>();
 
         void OnEnable()
         {
@@ -29,14 +31,17 @@ public class StoreInterfaceReference : MonoBehaviour
 
             if (tree.tree == null)
             {
+                var id = Guid.NewGuid().ToString();
                 if (GUILayout.Button("Initial Sequence Node"))
                 {
-                    tree.tree = new SequenceNode();
+                    tree.tree = new SequenceNode(new List<BaseNode> { }, id);
+                    selectorIndexes.Add(id, 1);
                 }
 
                 if (GUILayout.Button("Initial Selector Node"))
                 {
-                    tree.tree = new SelectorNode();
+                    tree.tree = new SelectorNode(new List<BaseNode> { }, id);
+                    selectorIndexes.Add(id, 2);
                 }
             } else
             {
@@ -51,32 +56,7 @@ public class StoreInterfaceReference : MonoBehaviour
                 (node.GetType().Name != "SequenceNode"
                 && node.GetType().Name != "SelectorNode"))
             {
-                GUILayout.BeginVertical(node != null ? node.GetType().Name : "", GUI.skin.GetStyle("HelpBox"));
-                GUILayout.Space(15);
-
-                GUILayout.BeginHorizontal();
-                MonoScript script = null;
-                script = (MonoScript)EditorGUILayout.ObjectField(script, typeof(MonoScript), false);
-                if (script != null)
-                {
-                    var changeIndex = parent.GetChildren().FindIndex(x => x == null || x.GetType().Name == "ActionNode");
-                    parent.GetChildren().RemoveAt(changeIndex);
-                    BaseNode newNode = Activator.CreateInstance(script.GetClass()) as BaseNode;
-                    parent.GetChildren().Insert(changeIndex, newNode);
-
-                }
-
-                if (GUILayout.Button("-"))
-                {
-                    if (parent != null)
-                    {
-                        var index = parent.GetChildren().IndexOf(node);
-                        parent.RemoveChildAt(index);
-                    }
-                }
-
-                GUILayout.EndHorizontal();
-                GUILayout.EndVertical();
+                DrawActionNode(node, parent);
                 return;
             }
 
@@ -85,30 +65,38 @@ public class StoreInterfaceReference : MonoBehaviour
 
 
             GUILayout.BeginHorizontal();
-            
-            GUILayout.Space(15);
-            if (GUILayout.Button("+Sequence"))
+
+            if (!selectorIndexes.ContainsKey(node.GetId()))
             {
-                node.AddChild(new SequenceNode());
+                selectorIndexes.Add(node.GetId(), nodes.IndexOf(node.GetType().ToString()));
             }
 
-            if (GUILayout.Button("+Selector"))
+            selectorIndexes[node.GetId()] = EditorGUILayout.Popup(selectorIndexes[node.GetId()], nodesArr);
+            if (GUILayout.Button("Refactor"))
             {
-                node.AddChild(new SelectorNode());
-            }
-            if (GUILayout.Button("+Action"))
+                ChangeFieldType(node, parent, selectorIndexes[node.GetId()]);
+            };
+
+            GUILayout.Space(100);
+            if (GUILayout.Button("+"))
             {
-                node.AddChild(new ActionNode());
+                var id = Guid.NewGuid().ToString();
+                node.AddChild(new SequenceNode(new List<BaseNode> { }, id));
+                selectorIndexes.Add(id, 1);
             }
             if (GUILayout.Button("-"))
             {
                 if (parent != null)
                 {
-                    var index = parent.GetChildren().IndexOf(node);
-                    parent.RemoveChildAt(index);
+                    selectorIndexes.Remove(node.GetId());
+                    var ind = parent.GetChildren().IndexOf(node);
+                    parent.RemoveChildAt(ind);
                 }
             }
+
             GUILayout.EndHorizontal();
+
+            EditorGUILayout.SelectableLabel(node.GetId(), EditorStyles.textField, GUILayout.Height(EditorGUIUtility.singleLineHeight));
 
             EditorGUI.indentLevel++;
             for (int i = 0; i < node.GetChildren().Count; i++)
@@ -118,6 +106,78 @@ public class StoreInterfaceReference : MonoBehaviour
             EditorGUI.indentLevel--;
 
             GUILayout.EndVertical();
+        }
+
+        private void DrawActionNode(BaseNode node, BaseNode parent)
+        {
+            GUILayout.BeginVertical(node != null ? node.GetType().Name : "", GUI.skin.GetStyle("HelpBox"));
+            GUILayout.Space(15);
+
+            GUILayout.BeginHorizontal();
+            MonoScript script = null;
+            script = (MonoScript)EditorGUILayout.ObjectField(script, typeof(MonoScript), false);
+            if (script != null)
+            {
+                var changeIndex = parent.GetChildren().FindIndex(x => x == node);
+
+                //parent.GetChildren().RemoveAt(changeIndex);
+                BaseNode newNode = Activator.CreateInstance(script.GetClass()) as BaseNode;
+                var id = Guid.NewGuid().ToString();
+                newNode.SetId(id);
+                parent.GetChildren()[changeIndex] = newNode;
+                selectorIndexes[id] = 0;
+                //parent.GetChildren().Insert(changeIndex, newNode);
+
+            }
+
+            if (GUILayout.Button("-"))
+            {
+                if (parent != null)
+                {
+                    selectorIndexes.Remove(node.GetId());
+                    var index = parent.GetChildren().IndexOf(node);
+                    parent.RemoveChildAt(index);
+                }
+            }
+
+            GUILayout.EndHorizontal();
+
+            if (node != null)
+            {
+                EditorGUILayout.SelectableLabel(node.GetId(), EditorStyles.textField, GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        private void ChangeFieldType(BaseNode node, BaseNode parent, int typeInd)
+        {
+            BaseNode newNode;
+
+            switch (typeInd)
+            {
+                case 1:
+                    newNode = new SequenceNode(node.GetChildren(), node.GetId());
+                    break;
+                case 2:
+                    newNode = new SelectorNode(node.GetChildren(), node.GetId());
+                    break;
+                default:
+                    newNode = new ActionNode();
+                    newNode.SetId(node.GetId());
+                    break;
+            }
+
+            if (parent == null)
+            {
+                HintedExecutionBehaviourTree tree = (HintedExecutionBehaviourTree)target;
+                tree.tree = newNode;
+            }
+            else
+            {
+                var changeIndex = parent.GetChildren().FindIndex(x => x == node);
+                parent.GetChildren()[changeIndex] = newNode;
+            }
         }
     }
 }

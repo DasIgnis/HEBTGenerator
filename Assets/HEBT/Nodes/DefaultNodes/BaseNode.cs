@@ -15,6 +15,7 @@ namespace HEBT.Nodes
         ExecutionResponse Execute(IEnvironment args);
 
         string GetId();
+        void SetId(string id);
 
         void Reorder(List<string> ids);
     }
