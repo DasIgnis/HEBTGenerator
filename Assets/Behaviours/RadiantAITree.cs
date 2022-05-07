@@ -22,9 +22,11 @@ namespace Assets.Behaviours
         [SerializeField]
         public List<BaseHint> hints;
 
-        private void Update()
+        public void Update()
         {
-            
+            tree.args = new RadiantAIEnvironment();
+            tree.Execute();
+            //
         }
     }
 }

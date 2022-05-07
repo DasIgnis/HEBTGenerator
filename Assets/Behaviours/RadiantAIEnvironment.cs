@@ -13,6 +13,7 @@ namespace Assets.Behaviours
         {
             return new RadiantAIEnvironmentParams
             {
+                Me = GameObject.Find("Mob"),
                 DistanceToEnemy = Vector3.Distance(GameObject.Find("PF Player").transform.position, GameObject.Find("Mob").transform.position)
             };
         }
@@ -20,6 +21,7 @@ namespace Assets.Behaviours
 
     public class RadiantAIEnvironmentParams
     {
+        public GameObject Me { get; set; }
         public float DistanceToEnemy { get; set; }
     }
 }
