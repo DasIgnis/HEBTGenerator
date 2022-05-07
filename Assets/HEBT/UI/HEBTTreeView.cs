@@ -51,20 +51,12 @@ public class StoreInterfaceReference : MonoBehaviour
                 }
             } else
             {
-                DrawNode(tree.tree, null);
+                DrawNode(tree.tree, new List<BaseNode>());
             }
         }
 
-        private void DrawNode(BaseNode node, BaseNode parent)
+        private void DrawNode(BaseNode node, List<BaseNode> parents)
         {
-            if (node == null ||
-                (node.GetType().Name != "SequenceNode"
-                && node.GetType().Name != "SelectorNode"))
-            {
-                DrawActionNode(node, parent);
-                return;
-            }
-
             if (!isCollapsed.ContainsKey(node.GetId())) isCollapsed.Add(node.GetId(), false);
             isCollapsed[node.GetId()] = EditorGUILayout.Foldout(isCollapsed[node.GetId()], node.GetType().Name);
 
@@ -72,42 +64,14 @@ public class StoreInterfaceReference : MonoBehaviour
 
             if (!isCollapsed[node.GetId()])
             {
-                DrawReorderingBtnGroup(node, parent);
+                DrawReorderingBtnGroup(node, parents);
 
+                DrawChangeTypeGroup(node, parents.Count == 0 ? null : parents.Last(), true);
 
-                GUILayout.BeginHorizontal();
-
-                if (!selectorIndexes.ContainsKey(node.GetId()))
+                if (node == null || node.GetType().Equals(typeof(ActionNode)) || node.GetType().IsSubclassOf(typeof(ActionNode)))
                 {
-                    hashedIndexes.Add(node.GetId(), nodes.IndexOf(node.GetType().ToString()));//
-                    selectorIndexes.Add(node.GetId(), nodes.IndexOf(node.GetType().ToString()));
+                    DrawMonoScriptGetter(node, parents.Count == 0 ? null : parents.Last());
                 }
-
-                hashedIndexes[node.GetId()] = selectorIndexes[node.GetId()];
-                selectorIndexes[node.GetId()] = EditorGUILayout.Popup(selectorIndexes[node.GetId()], nodesArr);
-                if (hashedIndexes[node.GetId()] != selectorIndexes[node.GetId()])
-                {
-                    ChangeFieldType(node, parent, selectorIndexes[node.GetId()]);
-                };
-
-                GUILayout.Space(50);
-                if (GUILayout.Button("+", GUILayout.Width(25)))
-                {
-                    var id = typeof(SequenceNode).Name + "_" + GetRandomHexNumber(4);
-                    node.AddChild(new SequenceNode(new List<BaseNode> { }, id));
-                    selectorIndexes.Add(id, 1);
-                }
-                if (GUILayout.Button("-", GUILayout.Width(25)))
-                {
-                    if (parent != null)
-                    {
-                        selectorIndexes.Remove(node.GetId());
-                        var ind = parent.GetChildren().IndexOf(node);
-                        parent.RemoveChildAt(ind);
-                    }
-                }
-
-                GUILayout.EndHorizontal();
 
                 DrawIdGroup(node);
             }
@@ -115,55 +79,73 @@ public class StoreInterfaceReference : MonoBehaviour
             EditorGUI.indentLevel++;
             for (int i = 0; i < node.GetChildren().Count; i++)
             {
-                DrawNode(node.GetChildren()[i], node);
+                List<BaseNode> parentNodes = new List<BaseNode> (parents);
+                parentNodes.Add(node);
+                DrawNode(node.GetChildren()[i], parentNodes);
             }
             EditorGUI.indentLevel--;
 
             GUILayout.EndVertical();
         }
 
-        private void DrawActionNode(BaseNode node, BaseNode parent)
+        private void DrawChangeTypeGroup(BaseNode node, BaseNode parent, bool canAddChildren)
         {
-            //GUILayout.BeginVertical(node != null ? node.GetType().Name : "", GUI.skin.GetStyle("HelpBox"));
-            //GUILayout.Space(15);
-            if (!isCollapsed.ContainsKey(node.GetId())) isCollapsed.Add(node.GetId(), false);
-            isCollapsed[node.GetId()] = EditorGUILayout.Foldout(isCollapsed[node.GetId()], node.GetType().Name);
+            GUILayout.BeginHorizontal();
 
-            if (!isCollapsed[node.GetId()])
+            if (!selectorIndexes.ContainsKey(node.GetId()))
             {
-                GUILayout.BeginHorizontal();
-                MonoScript script = null;
-                script = (MonoScript)EditorGUILayout.ObjectField(script, typeof(MonoScript), false);
-                if (script != null)
+                hashedIndexes.Add(node.GetId(), nodes.IndexOf(node.GetType().ToString()));
+                selectorIndexes.Add(node.GetId(), nodes.IndexOf(node.GetType().ToString()));
+            }
+
+            hashedIndexes[node.GetId()] = selectorIndexes[node.GetId()];
+            selectorIndexes[node.GetId()] = EditorGUILayout.Popup(selectorIndexes[node.GetId()], nodesArr);
+            if (hashedIndexes[node.GetId()] != selectorIndexes[node.GetId()])
+            {
+                ChangeFieldType(node, parent, selectorIndexes[node.GetId()]);
+            };
+
+            GUILayout.Space(50);
+            if (canAddChildren)
+            {
+                if (GUILayout.Button("+", GUILayout.Width(25)))
                 {
-                    var changeIndex = parent.GetChildren().FindIndex(x => x == node);
-
-                    BaseNode newNode = Activator.CreateInstance(script.GetClass()) as BaseNode;
-                    newNode.SetId(node.GetId());
-                    parent.GetChildren()[changeIndex] = newNode;
-                    selectorIndexes[node.GetId()] = 0;
-
+                    var id = typeof(SequenceNode).Name + "_" + GetRandomHexNumber(4);
+                    node.AddChild(new SequenceNode(new List<BaseNode> { }, id));
+                    selectorIndexes.Add(id, 1);
                 }
-
-                if (GUILayout.Button("-", GUILayout.Width(25)))
+            }
+            if (GUILayout.Button("-", GUILayout.Width(25)))
+            {
+                if (parent != null)
                 {
-                    if (parent != null)
-                    {
-                        selectorIndexes.Remove(node.GetId());
-                        var index = parent.GetChildren().IndexOf(node);
-                        parent.RemoveChildAt(index);
-                    }
-                }
-
-                GUILayout.EndHorizontal();
-
-                if (node != null)
-                {
-                    DrawIdGroup(node);
+                    selectorIndexes.Remove(node.GetId());
+                    var ind = parent.GetChildren().IndexOf(node);
+                    parent.RemoveChildAt(ind);
                 }
             }
 
-            //GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawMonoScriptGetter(BaseNode node, BaseNode parent)
+        {
+            GUILayout.BeginHorizontal();
+
+            MonoScript script = null;
+            script = (MonoScript)EditorGUILayout.ObjectField(script, typeof(MonoScript), false);
+            if (script != null)
+            {
+                var changeIndex = parent.GetChildren().FindIndex(x => x == node);
+
+                BaseNode newNode = Activator.CreateInstance(script.GetClass()) as BaseNode;
+                newNode.SetId(node.GetId());
+                parent.GetChildren()[changeIndex] = newNode;
+                selectorIndexes[node.GetId()] = 0;
+
+            }
+
+            GUILayout.EndHorizontal();
         }
 
         private void DrawIdGroup(BaseNode node)
@@ -179,9 +161,9 @@ public class StoreInterfaceReference : MonoBehaviour
             GUILayout.EndHorizontal();
         }
 
-        private void DrawReorderingBtnGroup(BaseNode node, BaseNode parent)
+        private void DrawReorderingBtnGroup(BaseNode node, List<BaseNode> parents)
         {
-            if (parent == null)
+            if (parents.Count == 0)
             {
                 return;
             }
@@ -189,15 +171,23 @@ public class StoreInterfaceReference : MonoBehaviour
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
+            var parent = parents.Last();
             int indexInParent = parent.GetChildren().IndexOf(node);
 
             if (parent != t.tree && GUILayout.Button("\u2190", GUILayout.Width(25)))  //previous level
             {
-                
+                var grandpa = parents.ElementAt(parents.Count - 2);
+                grandpa.GetChildren().Insert(grandpa.GetChildren().IndexOf(parent), node);
+                parent.RemoveChildAt(indexInParent);
             }
             if (indexInParent != 0 && GUILayout.Button("\u2192", GUILayout.Width(25)))  //next level
             {
-
+                var newParent = parent.GetChildren()[indexInParent - 1];
+                if (!newParent.GetType().IsSubclassOf(typeof(ActionNode)))
+                {
+                    newParent.AddChild(node);
+                    parent.RemoveChildAt(indexInParent);
+                };
             }
             if (indexInParent != 0 && GUILayout.Button("\u2191", GUILayout.Width(25)))  //up
             {

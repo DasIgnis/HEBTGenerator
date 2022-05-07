@@ -12,7 +12,7 @@ namespace HEBT.Nodes
         List<BaseNode> GetChildren();
         void AddChild(BaseNode node);
         void RemoveChildAt(int index);
-        ExecutionResponse Execute(IEnvironment args);
+        ExecutionResponse Execute(IEnvironment args, ref string currentNode);
 
         string GetId();
         void SetId(string id);

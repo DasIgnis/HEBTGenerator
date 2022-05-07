@@ -10,40 +10,22 @@ using UnityEngine;
 
 namespace Assets.HEBT.Nodes
 {
-    public class WanderToEnemy : BaseNode
+    public class WanderToEnemy : ActionNode
     {
-        [SerializeField]
-        public string _id;
-
-        public WanderToEnemy()
+        public override ExecutionResponse Execute(IEnvironment args, ref string currentNode)
         {
+            Debug.Log("WanderTo");
+            if (NotCurrent(ref currentNode))
+            {
+                return new ExecutionResponse { Status = BaseNodeExecutionStatus.SKIP };
+            }
+            var env = args.GetEnvironmentVariables() as RadiantAIEnvironmentParams;
+            env.Me.transform.position = Vector2.MoveTowards(env.Me.transform.position, env.Enemy.transform.position, 0.1f);
+            if (Vector2.Distance(env.Me.transform.position, env.Enemy.transform.position) < 5)
+            {
+                return new ExecutionResponse { Status = BaseNodeExecutionStatus.SUCCESS };
+            }
+            return new ExecutionResponse { Status = BaseNodeExecutionStatus.RUNNING, ExecutingActionNodeId = _id };
         }
-
-        public void AddChild(BaseNode node) { }
-
-        public ExecutionResponse Execute(IEnvironment args)
-        {
-            Debug.Log("IsNear");
-            return new ExecutionResponse { Status = BaseNodeExecutionStatus.SUCCESS };
-        }
-
-        public List<BaseNode> GetChildren()
-        {
-            return new List<BaseNode> { };
-        }
-
-        public string GetId()
-        {
-            return _id;
-        }
-
-        public void SetId(string id)
-        {
-            _id = id;
-        } 
-
-        public void RemoveChildAt(int index) { }
-
-        public void Reorder(List<string> ids) { }
     }
 }

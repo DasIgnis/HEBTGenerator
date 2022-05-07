@@ -10,6 +10,7 @@ namespace HEBT.Nodes
     {
         SUCCESS = 0,
         FAILURE = 1,
-        RUNNING
+        RUNNING,
+        SKIP
     }
 }

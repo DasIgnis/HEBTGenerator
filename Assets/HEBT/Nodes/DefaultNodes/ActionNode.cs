@@ -13,13 +13,16 @@ namespace HEBT.Nodes
     /// </summary>
     public class ActionNode : BaseNode
     {
+        [SerializeField]
+        public string _id;
+
         public void AddChild(BaseNode node)
         {
-            throw new NotImplementedException();
         }
 
-        public ExecutionResponse Execute(IEnvironment args)
+        public virtual ExecutionResponse Execute(IEnvironment args, ref string currentNode)
         {
+            Debug.Log("Execute action node");
             return new ExecutionResponse
             {
                 ExecutingActionNodeId = GetId(),
@@ -34,21 +37,29 @@ namespace HEBT.Nodes
 
         public string GetId()
         {
-            return "";
+            return _id;
         }
 
         public void SetId(string id)
         {
-
+            _id = id;
         }
 
         public void RemoveChildAt(int index)
         {
-            throw new NotImplementedException();
         }
 
         public void Reorder(List<string> ids)
         {
+        }
+
+        protected bool NotCurrent(ref string currentNode) {
+            if (currentNode != null && !GetId().Equals(currentNode))
+            {
+                return true;
+            }
+            currentNode = null;
+            return false;
         }
     }
 }

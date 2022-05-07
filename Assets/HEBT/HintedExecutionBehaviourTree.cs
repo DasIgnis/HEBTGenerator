@@ -19,6 +19,8 @@ namespace HEBT
         private List<string> initialOrder = new List<string>();
         private List<BaseHint> appliedHints = new List<BaseHint>();
 
+        private string CurrentExecutingNode = null;
+
         public HintedExecutionBehaviourTree()
         {
 
@@ -28,7 +30,14 @@ namespace HEBT
         {
             try
             {
-                tree.Execute(args);
+                var executionResult = tree.Execute(args, ref CurrentExecutingNode);
+                if (executionResult.Status == BaseNodeExecutionStatus.RUNNING)
+                {
+                    CurrentExecutingNode = executionResult.ExecutingActionNodeId;
+                } else
+                {
+                    CurrentExecutingNode = null;
+                }
             } catch (Exception e)
             {
                 Debug.LogError($"Error while performing behaviour: {e.Message}; Stacktrace: {e.StackTrace}");
@@ -49,6 +58,11 @@ namespace HEBT
             {
                 tree.Reorder(h.GetOrderIds());
             }
+        }
+
+        public void Interrupt()
+        {
+            CurrentExecutingNode = null;
         }
     }
 }

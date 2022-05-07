@@ -26,7 +26,6 @@ namespace Assets.Behaviours
         {
             tree.args = new RadiantAIEnvironment();
             tree.Execute();
-            //
         }
     }
 }
