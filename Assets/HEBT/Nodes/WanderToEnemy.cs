@@ -13,6 +13,8 @@ namespace Assets.HEBT.Nodes
 {
     public class WanderToEnemy : ActionNode
     {
+        private NavMeshAgent _agent;
+
         public override ExecutionResponse Execute(IEnvironment args, ref string currentNode)
         {
             Debug.Log("WanderTo");
@@ -22,17 +24,25 @@ namespace Assets.HEBT.Nodes
             }
             var env = args.GetEnvironmentVariables() as RadiantAIEnvironmentParams;
 
-            var agent = env.Me.GetComponent<NavMeshAgent>();
-            agent.updateRotation = false;
-            agent.updateUpAxis = false;
-            agent.SetDestination(env.Chest.transform.position);
+            _agent = env.Me.GetComponent<NavMeshAgent>();
+            _agent.updateRotation = false;
+            _agent.updateUpAxis = false;
+            _agent.SetDestination(env.Chest.transform.position);
 
             if (Vector2.Distance(env.Me.transform.position, env.Chest.transform.position) < 1)
             {
-                agent.ResetPath();
+                _agent.ResetPath();
                 return new ExecutionResponse { Status = BaseNodeExecutionStatus.SUCCESS };
             }
             return new ExecutionResponse { Status = BaseNodeExecutionStatus.RUNNING, ExecutingActionNodeId = _id };
+        }
+
+        public override void Interrupt()
+        {
+            if (_agent != null)
+            {
+                _agent.ResetPath();
+            }
         }
     }
 }

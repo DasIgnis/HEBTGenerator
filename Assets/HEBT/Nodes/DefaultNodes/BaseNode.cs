@@ -18,5 +18,6 @@ namespace HEBT.Nodes
         void SetId(string id);
 
         void Reorder(List<string> ids);
+        void Interrupt();
     }
 }

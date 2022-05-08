@@ -94,5 +94,10 @@ namespace HEBT.Nodes
             _children.Sort((x, y) => ids.IndexOf(x.GetId()) - ids.IndexOf(y.GetId()));
             _children.ForEach(x => x.Reorder(ids));
         }
+
+        public void Interrupt()
+        {
+            _children.ForEach(x => x.Interrupt());
+        }
     }
 }

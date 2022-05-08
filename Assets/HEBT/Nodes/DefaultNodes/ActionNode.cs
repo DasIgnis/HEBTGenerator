@@ -61,5 +61,10 @@ namespace HEBT.Nodes
             currentNode = null;
             return false;
         }
+
+        public virtual void Interrupt()
+        {
+
+        }
     }
 }
