@@ -15,7 +15,8 @@ namespace Assets.Behaviours
             {
                 Me = GameObject.Find("Mob"),
                 Enemy = GameObject.Find("PF Player"),
-                DistanceToEnemy = Vector3.Distance(GameObject.Find("PF Player").transform.position, GameObject.Find("Mob").transform.position)
+                DistanceToEnemy = Vector3.Distance(GameObject.Find("PF Player").transform.position, GameObject.Find("Mob").transform.position),
+                Chest = GameObject.Find("PF Props Chest")
             };
         }
     }
@@ -25,5 +26,6 @@ namespace Assets.Behaviours
         public GameObject Me { get; set; }
         public GameObject Enemy { get; set; }
         public float DistanceToEnemy { get; set; }
+        public GameObject Chest { get; set; }
     }
 }
