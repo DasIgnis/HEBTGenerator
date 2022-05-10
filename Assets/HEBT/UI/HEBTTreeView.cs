@@ -18,7 +18,7 @@ public class StoreInterfaceReference : MonoBehaviour
 
         private static Random random = new Random();
 
-        private static List<string> nodes = new List<string> { "ActionNode", "SequenceNode", "SelectorNode" };
+        private static List<string> nodes = new List<string> { "ActionNode", "SequenceNode", "SelectorNode", "TimeMonitorNode" };
         private static string[] nodesArr = nodes.ToArray();
 
         private static Dictionary<string, int> selectorIndexes = new Dictionary<string, int>();
@@ -211,6 +211,9 @@ public class StoreInterfaceReference : MonoBehaviour
                     break;
                 case 2:
                     newNode = new SelectorNode(node.GetChildren(), node.GetId());
+                    break;
+                case 3:
+                    newNode = new TimeMonitorNode(node.GetChildren(), node.GetId());
                     break;
                 default:
                     newNode = new ActionNode();

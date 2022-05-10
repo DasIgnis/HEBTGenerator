@@ -1,4 +1,5 @@
 ﻿using Assets.HEBT.Hints;
+using Assets.Models;
 using HEBT;
 using HEBT.Nodes;
 using System;
@@ -12,19 +13,31 @@ namespace Assets.Behaviours
 {
     class RadiantAITree: MonoBehaviour
     {
-        public int Energy = 10;
-
-        //[SerializeField]
-        //public HintedExecutionBehaviourTree tree;
         [SerializeField, SerializeReference]
         public HintedExecutionBehaviourTree tree;
 
         [SerializeField]
         public List<BaseHint> hints;
 
+        [SerializeField]
+        public List<TimeRange> timeRanges;
+
+        [SerializeField]
+        public TimeMonitorScript timeMonitor;
+
+        [SerializeField]
+        public GameObject wanderObject;
+
+        [SerializeField]
+        public GameObject prayObject;
+
+        [SerializeField]
+        public GameObject restObject;
+
         public void Update()
         {
-            tree.args = new RadiantAIEnvironment();
+            int timeGap = timeRanges.FindIndex(x => x.Start <= timeMonitor.GetHours() && x.End > timeMonitor.GetHours());
+            tree.args = new RadiantAIEnvironment(this.gameObject, wanderObject, prayObject, restObject, timeGap);
             tree.Execute();
         }
     }
