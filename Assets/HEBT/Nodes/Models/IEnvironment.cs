@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HEBT.Nodes
+namespace Assets.Behaviours
 {
-    public enum BaseNodeExecutionStatus
+    public interface IEnvironment
     {
-        SUCCESS = 0,
-        FAILURE = 1,
-        RUNNING
+        object GetEnvironmentVariables();
     }
 }
